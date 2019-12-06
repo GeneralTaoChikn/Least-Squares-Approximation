@@ -40,26 +40,29 @@ class Matrix{
 
 private:
 
-    ///The read in values
-    vector<CoreTempReading> readings;
 
-        //X matrix
-    vector<MatrixContent> X_matrix;
+    vector<CoreTempReading> readings; 				///< Storage for both Time & Temperatures
 
-        //Y matrix
-    vector<vector<MatrixContent>> Y_matrices;
 
-        //XT matrix
-    vector<MatrixContent> XT_matrix;
+    vector<MatrixContent> X_matrix; 				///< X matrix containing the times
 
-        //XTY matrices
-    vector<vector<MatrixContent>> XTY_matrices;
 
-    vector<MatrixContent> XTX_matrix;
+    vector<vector<MatrixContent>> Y_matrices;		///< Y matrices each representing a core and Temperatures
 
-    vector<vector<MatrixContent>> XTX_XTY_matrix;
 
-    vector<vector<MatrixContent>> LinearInterpolate;
+    vector<MatrixContent> XT_matrix;				///< XT matrix
+
+
+    vector<vector<MatrixContent>> XTY_matrices;		///< multiple XTY matrix
+
+
+    vector<MatrixContent> XTX_matrix;				///< XTX matrix
+
+
+    vector<vector<MatrixContent>> XTX_XTY_matrix;	///< Augmented XTX|XTY matrix
+
+
+    vector<vector<MatrixContent>> LinearInterpolate;///< Interpolation readings
 
 
 
@@ -79,60 +82,96 @@ public:
      */
     virtual ~Matrix();
 
-//------------------------------------------------------------------------------
+//---------------------------------Getters----------------------------------------
 
     /**
-     * Retrieve the matrix
+     * Retrieve the Number of cores
      */
-    vector<MatrixContent> getXMatrix;
-
-    /**
-     * Retrieve Y Matrices
-     */
-    vector<vector<MatrixContent>> getYMatrices();
-
     int numberOfCores() const;
 
+    /**
+     * Get the number row size of X matrix
+     */
     int getXsize() const;
 
+    /**
+     * Get the number row size of Y matrix
+     */
     int getYsize() const;
 
 
 
 //----------------------------Matrix-Makers--------------------------------------
-
+    /**
+     * Sets the X matrix using CoreTemp Readings
+     */
     void setX_Matrix();
 
+    /**
+     * Sets the Y matrix using CoreTemp Readings
+     */
     vector<vector<MatrixContent>> setY_Matrix();
 
+    /**
+     * Sets the XTX through multiplication
+     */
     void setXTX_Matrix();
 
+    /**
+     * Sets the XTY through multiplication
+     */
     void setXTY_Matrix();
 
+    /**
+     * Augments to XTX|XTY
+     */
     void setXTX_XTY_Matrix();
 
 //------------------------------------------------------------------------------
 
     /**
      * Read in the Times and temperatures of each core from a source file
+     * @param original_temps - file to read in
+     * @param step_size - increment of time in seconds
      */
     vector<CoreTempReading> parse_raw_temps(std::istream& original_temps,
                                              int step_size = 30);
     /**
      * Multiply Two Matrices
+     * @param lhs - matrix to multiply
+     * @param rhs - matrix to multiply
      */
     vector<MatrixContent> multiply (vector<MatrixContent> lhs,
                                     vector<MatrixContent> rhs);
 
+    /**
+     * Transposes a Matrix
+     * @param matrix - matrix to transpose
+     */
     vector<MatrixContent> Transpose (vector<MatrixContent> matrix);
 
-    vector<vector<MatrixContent>> RowReduce(vector<vector<MatrixContent>> );
-
+    /**
+     * Augments a Matrix
+     * @param lhs -  matrix to augment
+     * @param rhs - matrix to augment
+     */
     vector<MatrixContent> Augment(vector<MatrixContent> lhs,
                                     vector<MatrixContent> rhs);
 
+    /**
+     * Reduces to Echelon form
+     * @param matrix to reduce to echelon form
+     */
+    vector<vector<MatrixContent>> RowReduce(vector<vector<MatrixContent>> );
+
+    /**
+     * Performs a Linear Interpolation
+     */
     vector<vector<MatrixContent>> PieceWiseLinearInterpolation();
 
+    /**
+     * Functions used to Reduce to Echelon Form
+     */
     int largestRowByCol (vector<MatrixContent> , int , int);
     void swapRows (vector<MatrixContent>&, int, int);
     void scaleMatrix(vector<MatrixContent>&, int row_index, int num_cols, int s);
@@ -145,12 +184,6 @@ public:
      * Display the Readings
      */
     void display();
-
-//    virtual void display(ostream& outs) const;
-//
-//    virtual void read(istream& ins);
-//
-//    virtual Matrix* clone() const;
 
 };
 
