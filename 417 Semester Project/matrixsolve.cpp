@@ -1,6 +1,13 @@
 #include "matrix.h"
 
-
+/**
+ * These functions are modified versions.
+ * Original Code is from this website
+ * https://rosettacode.org/wiki/Reduced_row_echelon_form
+ *
+ * Thank You Rosetta Code! I couldn't get this crap
+ * working without it!
+ */
 void Matrix::swapRows(vector<MatrixContent>& matrix, int row, int pivot)
 {
     for(int col = 0; col < matrix[0].size(); col++){

@@ -150,7 +150,14 @@ vector<MatrixContent> Matrix::Augment(vector<MatrixContent> lhs,
 
 }
 
-
+/**
+ * These functions are modified versions.
+ * Original Code is from this website
+ * https://rosettacode.org/wiki/Reduced_row_echelon_form
+ *
+ * Thank You Rosetta Code! I couldn't get this crap
+ * working without it!
+ */
 void Matrix::RowReduce(vector<vector<MatrixContent>>& matrix)
 {
     const int nrows = matrix[0].size(); // number of rows
@@ -200,8 +207,9 @@ vector<vector<MatrixContent>> Matrix::PieceWiseLinearInterpolation()
     vector<vector<MatrixContent>> interpolate(Y_matrices.size(),
                                               vector<MatrixContent>(X_matrix.size()-1,
                                                                      MatrixContent ()));
-
+    //Variables to Perfom Calculations
     double x0, x1, y0, y1, c0, c1;
+
     for (int core = 0; core < Y_matrices.size(); core++) {
         for(int row = 0; row < (X_matrix.size()-1); row++){
 
@@ -209,8 +217,8 @@ vector<vector<MatrixContent>> Matrix::PieceWiseLinearInterpolation()
             x1 = X_matrix[row+1][1];
             y0 = Y_matrices[core][row][0];
             y1 = Y_matrices[core][row+1][0];
-            c1 = ((y1-y0)/(x1-x0));
-            c0 = y0 - (c1 * x0);
+            c1 = ((y1-y0)/(x1-x0));		//slope
+            c0 = y0 - (c1 * x0);		//Y-intercept
 
             interpolate[core][row].push_back(x0);
             interpolate[core][row].push_back(x1);
@@ -224,7 +232,7 @@ vector<vector<MatrixContent>> Matrix::PieceWiseLinearInterpolation()
     return interpolate;
 
 }
-//----------------------------Matrix-Read-SHIT-----------------------------------------
+//----------------------------Matrix-Read-Crap-----------------------------------------
 vector<CoreTempReading> Matrix::parse_raw_temps(std::istream& original_temps,
                                              int step_size)
 {
@@ -251,11 +259,14 @@ vector<CoreTempReading> Matrix::parse_raw_temps(std::istream& original_temps,
 
     return allTheReadings;
 }
-//----------------------------Matrix-Display-SHIT-------------------------------------
+//----------------------------Matrix-Display-Crap-------------------------------------
 void Matrix::display(string& File)
 {
     ofstream fout;
+
+    //Variables to output in format
     double x0, x1, c0, c1;
+
     string BaseName = File;
     BaseName.erase(BaseName.find_last_of('.'));
 
@@ -270,13 +281,12 @@ void Matrix::display(string& File)
 
 
         ///Interpolate    core
-        cout << "Interpolate" << '\n';
-        fout << "Interpolate" << '\n';
+        cout << "PieceWise Linear Interpolation" << '\n';
+        fout << "PieceWise Linear Interpolation" << '\n';
 
 
         for(int row = 0; row < LinearInterpolate[0].size(); row++){
 
-            double x0, x1, c0, c1;
             x0 = LinearInterpolate[core][row][0];
             x1 = LinearInterpolate[core][row][1];
             c0 = LinearInterpolate[core][row][2];
