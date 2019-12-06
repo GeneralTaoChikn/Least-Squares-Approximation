@@ -36,22 +36,12 @@ int main()
     //Read in here
     Matrix matrix(input_temps);
 
-//    //try to display
+    //try to display
 //    string FileName = argv[1];
-//    for (int core = 0; core < matrix.numberOfCores(); core++){
-//        string FileName = argv[1];
-//         FileName += to_string(core);
-//        matrix.display();
-//    }
-    matrix.display();
-
-    // Output everything to match the Python version
-//    ofstream fout;
-//    fout.open("Output.txt");
-
-    //Output the Temps
+    string FileName = "Test1.txt";
+    matrix.display(FileName);
 
 
-//    fout.close();
     return 0;
+
 }

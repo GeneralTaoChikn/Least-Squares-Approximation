@@ -3,6 +3,8 @@
 #include <iterator>
 #include <list>
 #include <vector>
+#include <cstdio>
+#include <string>
 
 #include <iostream>
 #include <iomanip>
@@ -12,6 +14,8 @@
 #include <iterator>
 #include <algorithm>
 #include <utility>
+
+#include <cassert>
 
 
 
@@ -41,13 +45,13 @@ class Matrix{
 private:
 
 
-    vector<CoreTempReading> readings; 				///< Storage for both Time & Temperatures
+    vector<CoreTempReading> readings; 				///< Storage for Time & Temperatures
 
 
     vector<MatrixContent> X_matrix; 				///< X matrix containing the times
 
 
-    vector<vector<MatrixContent>> Y_matrices;		///< Y matrices each representing a core and Temperatures
+    vector<vector<MatrixContent>> Y_matrices;		///< Container of Cores' Temperatures
 
 
     vector<MatrixContent> XT_matrix;				///< XT matrix
@@ -162,7 +166,9 @@ public:
      * Reduces to Echelon form
      * @param matrix to reduce to echelon form
      */
-    vector<vector<MatrixContent>> RowReduce(vector<vector<MatrixContent>> );
+//    vector<vector<MatrixContent>> RowReduce(vector<vector<MatrixContent>> );
+    void RowReduce(vector<vector<MatrixContent>>& );
+
 
     /**
      * Performs a Linear Interpolation
@@ -172,18 +178,17 @@ public:
     /**
      * Functions used to Reduce to Echelon Form
      */
-    int largestRowByCol (vector<MatrixContent> , int , int);
+
     void swapRows (vector<MatrixContent>&, int, int);
-    void scaleMatrix(vector<MatrixContent>&, int row_index, int num_cols, int s);
-    void eliminate(vector<MatrixContent>&, int SRCrow_index, int num_cols, int num_rows);
-    void backsolve(vector<MatrixContent>&);
+    void divide_rows (vector<MatrixContent>& , int i, int v);
+    void add_multiple_row (vector<MatrixContent>& , int i, int k, int v);
 
 
 
     /**
      * Display the Readings
      */
-    void display();
+    void display(string& );
 
 };
 

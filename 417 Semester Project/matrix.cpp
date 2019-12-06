@@ -1,12 +1,14 @@
+#include <stdio.h>
 #include "matrix.h"
+
 //----------------------------Object-Constructors--------------------------------------
-///Default Constructor
+//Default Constructor
 Matrix::Matrix()
 {
 
 }
 
-///Constructor
+//Constructor
 Matrix::Matrix(istream& toread)
 {
     this->readings = parse_raw_temps(toread);
@@ -16,20 +18,22 @@ Matrix::Matrix(istream& toread)
     this->setXTX_Matrix();
     this->setXTY_Matrix();
     this->setXTX_XTY_Matrix();
-//    this->XTX_XTY_matrix = RowReduce(XTX_XTY_matrix);
+    this->RowReduce(XTX_XTY_matrix);
     this->LinearInterpolate = PieceWiseLinearInterpolation();
 }
 
-///Destructor
+//Destructor
 Matrix::~Matrix()
 {
+    readings.clear();
 
 }
 
 //----------------------------Matrix-Constructors--------------------------------------
-///*******Shit Works
+
 void Matrix::setX_Matrix()
 {
+    //Read in Time
     for (const CoreTempReading& theReading : readings) {
         //Constructs X_ matrix
         MatrixContent toPush;
@@ -41,19 +45,20 @@ void Matrix::setX_Matrix()
 
 }
 
-///*******Shit Works
 vector<vector<MatrixContent>> Matrix::setY_Matrix()
 {
-
+    //Read in temperatures
     vector<MatrixContent> Y_matrix;
     for (const CoreTempReading& theReading : readings) {
         //Construct Y_matrices
         Y_matrix.push_back(theReading.second);
     }//end for
 
-    ///Y-matrices will split into for 4 vectors each with [12rows][1column]
-    vector<vector<MatrixContent>> Parse_To_Y_vectors(Y_matrix[0].size(), vector<MatrixContent>(Y_matrix.size(), MatrixContent ()));
-
+    //Sets Dimension so it doesn't go out of scope
+    vector<vector<MatrixContent>> Parse_To_Y_vectors(Y_matrix[0].size(),
+                                                     vector<MatrixContent>(Y_matrix.size(),
+                                                                           MatrixContent ()));
+    //Break up Matrix into single vectors
     for(int core = 0; core < Y_matrix[0].size(); core++){
         for(int row = 0; row < Y_matrix.size(); row++){
             Parse_To_Y_vectors[core][row].push_back(Y_matrix[row][core]);
@@ -63,15 +68,11 @@ vector<vector<MatrixContent>> Matrix::setY_Matrix()
     return Parse_To_Y_vectors;
 }
 
-
-///*******Shit Works
 void Matrix::setXTX_Matrix()
 {
     XTX_matrix = multiply(XT_matrix,X_matrix);
 }
 
-
-///*******Shit Works
 void Matrix::setXTY_Matrix()
 {
     for (const vector<MatrixContent>& yvector  : Y_matrices){
@@ -87,7 +88,7 @@ void Matrix::setXTX_XTY_Matrix()
 }
 
 //----------------------------Matrix-Operators----------------------------------------------
-///*******Shit Works
+
 vector<MatrixContent>  Matrix::multiply(vector<MatrixContent> lhs, vector<MatrixContent> rhs)
 {
     vector<MatrixContent> product(lhs.size(),MatrixContent(rhs[0].size()));
@@ -107,21 +108,22 @@ vector<MatrixContent>  Matrix::multiply(vector<MatrixContent> lhs, vector<Matrix
 
 }
 
-///*******Shit Works
+
 vector<MatrixContent> Matrix::Transpose(vector<MatrixContent> matrix)
 {
      //Transpose  matrix
     vector<MatrixContent> transpose(matrix[0].size(),vector<double>());
-    for(int i=0; i < matrix.size();i++){
-        for(int j=0; j < matrix[0].size() ;j++){
-            transpose[j].push_back(matrix[i][j]);
+
+    for(int row=0; row < matrix.size(); row++){
+        for(int col=0; col < matrix[0].size() ;col++){
+            transpose[col].push_back(matrix[row][col]);
         }//end for
     }//end for
 
     return transpose;
 }
 
-///*******Shit Works
+
 vector<MatrixContent> Matrix::Augment(vector<MatrixContent> lhs,
                                                 vector<MatrixContent> rhs)
 {
@@ -148,37 +150,50 @@ vector<MatrixContent> Matrix::Augment(vector<MatrixContent> lhs,
 
 }
 
-///*******Garbage
-vector<vector<MatrixContent>> Matrix::RowReduce(vector<vector<MatrixContent>> matrix)
+
+void Matrix::RowReduce(vector<vector<MatrixContent>>& matrix)
 {
     const int nrows = matrix[0].size(); // number of rows
     const int ncols = matrix[0][0].size(); // number of columns
-    int lead = 0;
+    int lead; // used to pivot
 
-    vector<vector<MatrixContent>> RowEchelonForm = matrix;
+    for (vector<MatrixContent>& traverse : matrix){
+        lead = 0;
+        for (int row = 0; row < nrows; row++) { // for each row ...
+
+            if (ncols <= lead)
+                return;
+
+            //Index
+            int i = row;
+
+            while (traverse[i][lead] == 0) {
+                i++;
+
+                if (nrows < i) {
+                    i = row;
+                    lead++;
+
+                    if (ncols <= lead)
+                        return;
+                }//end if
+            }//end while
+
+            swapRows(traverse, i, row);
+
+            divide_rows(traverse, row, traverse[row][lead]);
 
 
-    // pass in matrix like rowecheon form core
-    for(int core = 0; core < matrix.size(); core++){
-            for (int r = 0; r < nrows; r++) { // for each row ...
-
-                int idx = largestRowByCol(RowEchelonForm[core], 0,ncols);
-
-                swapRows(RowEchelonForm[core], r, idx );
-
-                scaleMatrix(RowEchelonForm[core], r, ncols, RowEchelonForm[core][r][r]);
-                RowEchelonForm [core][r][r] = 1;
-
-                eliminate(RowEchelonForm[core],r,ncols,nrows);
-
+            for (i = 0; i < nrows; i++) {
+                if (i != row)
+                    add_multiple_row(traverse, i, row, -(traverse[i][lead]));
+            }//end for
+            lead++;
         }//end for
-    }//end while
-
-    return RowEchelonForm;
-
+    }//end for
 }
 
-///*******Shit Works
+
 vector<vector<MatrixContent>> Matrix::PieceWiseLinearInterpolation()
 {
 
@@ -237,159 +252,62 @@ vector<CoreTempReading> Matrix::parse_raw_temps(std::istream& original_temps,
     return allTheReadings;
 }
 //----------------------------Matrix-Display-SHIT-------------------------------------
-void Matrix::display()
+void Matrix::display(string& File)
 {
-//        for (const CoreTempReading& theReading : readings) {
-//        cout << "(" << theReading.first << ", [";
-////        fout << "(" << theReading.first << ", [";
-//
-//        const vector<double>& coreTemps = theReading.second;
-//        for (int i = 0; i < coreTemps.size() -1 ; i++) {
-//            cout << coreTemps[i] << ", ";
-////            fout << coreTemps[i] << ", ";
-//        }
-//        cout << *(coreTemps.end() - 1) << "])" << "\n";
-////        fout << *(coreTemps.end() - 1) << "])" << "\n";
-//    }
-//
-////    for(double x : Y_matrix)
-////        cout << '\n' << x <<'\n';
-
-//    string text;
-//    for (int core = 0; core < XTX_XTY_matrix.size(); core ++){
-//        text = ""
-//    }
-    ///Tests the data structures
     ofstream fout;
-    fout.open("output1.txt");
+    double x0, x1, c0, c1;
+    string BaseName = File;
+    BaseName.erase(BaseName.find_last_of('.'));
 
-        ///Display X
-    cout << '\n' << "Display X" << '\n';
-    fout << '\n' << "Display X" << '\n';
-    for (const MatrixContent& x: X_matrix){
-        for (double xc:x){
-            cout << " " << xc;
-            fout << " " << xc;
-        }
-        cout << '\n';
-        fout << '\n';
-    }
+    for(int core = 0; core < numberOfCores(); core++){
 
-        ///Display Y vectors    Core
-    cout << '\n' << "Display Y vectors" << '\n';
-    fout << '\n' << "Display Y vectors" << '\n';
-        int i =1;
-    for (const vector<MatrixContent>& core: Y_matrices){
-        cout <<"VECTOR " << i << '\n'<< '\n';
-        fout <<"VECTOR " << i << '\n'<< '\n';
-        for(const MatrixContent& row: core){
-            for (const double& xtc:row){
-                cout << " " << xtc ;
-                fout << " " << xtc ;
-            }
-            cout << '\n';
-            fout << '\n';
-        }
-        cout << '\n';
-        fout << '\n';
-        i++;
-    }
+        string Output = BaseName + "-core-" +
+           to_string(core) + ".txt";
 
-        ///Display XT
-    cout << '\n' << "Display XT" << '\n';
-    fout << '\n' << "Display XT" << '\n';
-    for (const MatrixContent& xt: XT_matrix){
-        for (double xtc:xt){
-            cout << " " << xtc ;
-            fout << " " << xtc ;
-        }
-         cout << '\n';
-         fout << '\n';
-    }
-
-        ///Display XTX
-        cout << '\n' << "Display XTX" << '\n';
-        fout << '\n' << "Display XTX" << '\n';
-    for (const MatrixContent& xt: XTX_matrix){
-        for (double xtc:xt){
-            cout << " " << xtc ;
-            fout << " " << xtc ;
-        }
-         cout << '\n';
-         fout << '\n';
-    }
-
-        ///Display XTY      core
-    cout << '\n' << "Display XTY" << '\n';
-    fout << '\n' << "Display XTY" << '\n';
-    for (const vector<MatrixContent>& xty1d: XTY_matrices){
-        for(const MatrixContent& xty2d: xty1d){
-            for (double xtc:xty2d){
-                cout << " " << xtc ;
-                fout << " " << xtc ;
-            }
-            cout << '\n';
-            fout << '\n';
-        }
-        cout << '\n';
-        fout << '\n';
-    }
-
-        ///Display XTX XTY    core
-    cout << '\n' << "Display XTX|XTY" << '\n';
-    fout << '\n' << "Display XTX|XTY" << '\n';
-    for (const vector<MatrixContent>& xty1d: XTX_XTY_matrix){
-        for(const MatrixContent& xty2d: xty1d){
-            for (double xtc:xty2d){
-                cout << " " << xtc ;
-                fout << " " << xtc ;
-            }
-            cout << '\n';
-            fout << '\n';
-        }
-        cout << '\n';
-        fout << '\n';
-    }
+        fout.open(Output);
 
 
-            ///Interpolate    core
-    cout << '\n' << "Interpolate" << '\n';
-    fout << '\n' << "Interpolate" << '\n';
-//    cout << LinearInterpolate[1][1][0];
 
-    for (int core = 0; core < numberOfCores()-1; core++){
+
+        ///Interpolate    core
+        cout << "Interpolate" << '\n';
+        fout << "Interpolate" << '\n';
+
+
         for(int row = 0; row < LinearInterpolate[0].size(); row++){
 
-//    for (int core = 0; core < ; core++){
-//        for(int row = 0; row < ; row++){
             double x0, x1, c0, c1;
             x0 = LinearInterpolate[core][row][0];
             x1 = LinearInterpolate[core][row][1];
             c0 = LinearInterpolate[core][row][2];
             c1 = LinearInterpolate[core][row][3];
 
-                cout << x0 << " <= x < " << x1 << "; y = " << c0 << " + " << c1 << "x ; Interpolate";
-//                cout << LinearInterpolate[core][row][0] << " <= x <" << LinearInterpolate[core][row][1] << "; y = " << LinearInterpolate[core][row][2] << " + " << LinearInterpolate[core][row][3] << "x ; Interpolate";
+            cout << x0 << " <= x < " << x1 << "; y = "
+                 << c0 << " + " << c1 << "x ; Interpolate";
+
+            fout << x0 << " <= x < " << x1 << "; y = " << c0
+                 << " + " << c1 << "x ; Interpolate";
+
             cout << '\n';
             fout << '\n';
-        }
-        cout << '\n';
-        fout << '\n';
-    }
+        }//end for
 
-//    for (const vector<MatrixContent>& xty1d: LinearInterpolate){
-//        for(const MatrixContent& xty2d: xty1d){
-//            for (double xtc:xty2d){
-//                cout << " " << xtc ;
-//                fout << " " << xtc ;
-//            }
-//            cout << '\n';
-//            fout << '\n';
-//        }
-//        cout << '\n';
-//        fout << '\n';
-//    }
 
-    fout.close();
+        cout << '\n' <<"Global Least Squares Approximation" << '\n';
+        fout << '\n' <<"Global Least Squares Approximation" << '\n';
+
+        x0 = 0;
+        x1 = X_matrix[getXsize()-1][1];
+        c0 = XTX_XTY_matrix[core][0][2];
+        c1 = XTX_XTY_matrix[core][1][2];
+
+        cout << x0 << " <= x < " << x1 << "; y = "
+            << c0 << " + " << c1 << "x ; Least-Squares" << '\n';
+
+        fout << x0 << " <= x < " << x1 << "; y = " << c0
+            << " + " << c1 << "x ; Least-Squares";
+
+        fout.close();
+    }//end for
 
 }
