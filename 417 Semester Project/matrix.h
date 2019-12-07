@@ -137,6 +137,8 @@ public:
      * Read in the Times and temperatures of each core from a source file
      * @param original_temps - file to read in
      * @param step_size - increment of time in seconds
+     *
+     * @return parse_raw_temps - vector of time and readings
      */
     vector<CoreTempReading> parse_raw_temps(std::istream& original_temps,
                                              int step_size = 30);
@@ -144,6 +146,8 @@ public:
      * Multiply Two Matrices
      * @param lhs - matrix to multiply
      * @param rhs - matrix to multiply
+     *
+     * @return product - result of multiplication
      */
     vector<MatrixContent> multiply (vector<MatrixContent> lhs,
                                     vector<MatrixContent> rhs);
@@ -151,6 +155,8 @@ public:
     /**
      * Transposes a Matrix
      * @param matrix - matrix to transpose
+     *
+     * @return Transpose - transposed matrix
      */
     vector<MatrixContent> Transpose (vector<MatrixContent> matrix);
 
@@ -158,6 +164,7 @@ public:
      * Augments a Matrix
      * @param lhs -  matrix to augment
      * @param rhs - matrix to augment
+     * @return Augmnet - two matrices combined
      */
     vector<MatrixContent> Augment(vector<MatrixContent> lhs,
                                     vector<MatrixContent> rhs);
@@ -166,21 +173,32 @@ public:
      * Reduces to Echelon form
      * @param matrix to reduce to echelon form
      */
-//    vector<vector<MatrixContent>> RowReduce(vector<vector<MatrixContent>> );
     void RowReduce(vector<vector<MatrixContent>>& );
 
 
     /**
      * Performs a Linear Interpolation
+     *
+     * @return Interpolation - functions at each point
      */
     vector<vector<MatrixContent>> PieceWiseLinearInterpolation();
 
-    /**
-     * Functions used to Reduce to Echelon Form
-     */
 
+     // Functions used to Reduce to Echelon Form
+
+    /**
+     * Swaps two rows
+     */
     void swapRows (vector<MatrixContent>&, int, int);
+
+    /**
+     * scales the rows
+     */
     void divide_rows (vector<MatrixContent>& , int i, int v);
+
+    /**
+     * Subtracts two rows
+     */
     void add_multiple_row (vector<MatrixContent>& , int i, int k, int v);
 
 
