@@ -6,7 +6,7 @@
  * https://rosettacode.org/wiki/Reduced_row_echelon_form
  *
  * Thank You Rosetta Code! I couldn't get this crap
- * working without it!
+ * working without you!
  */
 void Matrix::swapRows(vector<MatrixContent>& matrix, int row, int pivot)
 {

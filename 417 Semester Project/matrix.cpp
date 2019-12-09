@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "matrix.h"
 
 //----------------------------Object-Constructors--------------------------------------
@@ -151,12 +150,12 @@ vector<MatrixContent> Matrix::Augment(vector<MatrixContent> lhs,
 }
 
 /**
- * These functions are modified versions.
+ * This functions is a modified version.
  * Original Code is from this website
  * https://rosettacode.org/wiki/Reduced_row_echelon_form
  *
  * Thank You Rosetta Code! I couldn't get this crap
- * working without it!
+ * working without you!
  */
 void Matrix::RowReduce(vector<vector<MatrixContent>>& matrix)
 {
@@ -233,6 +232,9 @@ vector<vector<MatrixContent>> Matrix::PieceWiseLinearInterpolation()
 
 }
 //----------------------------Matrix-Read-Crap-----------------------------------------
+/**
+ *  Function Originally from Kennedy's ParseTemps Program
+ */
 vector<CoreTempReading> Matrix::parse_raw_temps(std::istream& original_temps,
                                              int step_size)
 {
@@ -255,7 +257,7 @@ vector<CoreTempReading> Matrix::parse_raw_temps(std::istream& original_temps,
 
         allTheReadings.emplace_back(step, next_temperature_set);
         step += step_size;
-    }
+    }//end while
 
     return allTheReadings;
 }
@@ -302,7 +304,7 @@ void Matrix::display(string& File)
             fout << '\n';
         }//end for
 
-
+        ///Least Squares
         cout << '\n' <<"Global Least Squares Approximation" << '\n';
         fout << '\n' <<"Global Least Squares Approximation" << '\n';
 
